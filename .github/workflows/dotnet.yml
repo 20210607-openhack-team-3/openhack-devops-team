@@ -8,8 +8,7 @@ on:
     branches: [ master ]
     paths:
       - 'apis/poi/**'    
-
-
+      - '.github/workflows/dotnet.yml'
 
 defaults:
   run:

@@ -7,9 +7,12 @@ on:
   pull_request:
     branches: [ master ]
 
+defaults:
+  run:
+    working-directory: /apis/poi
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +24,6 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Realease --no-restore
+      run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal

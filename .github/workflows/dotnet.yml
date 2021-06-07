@@ -42,4 +42,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        title: ${{ GITHUB_WORKFLOW }}
+        title: ${{ env.GITHUB_WORKFLOW }}

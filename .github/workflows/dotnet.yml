@@ -43,3 +43,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         title: ${{ env.GITHUB_WORKFLOW }}
+        filename: .github/ISSUE_TEMPLATE_HACK.md        

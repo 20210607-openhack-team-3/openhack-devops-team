@@ -1,0 +1,31 @@
+name: Deploy.NET
+
+on:
+  push:
+    branches: master
+    paths:
+      - 'apis/poi/**'
+
+defaults:
+  run:
+    working-directory: apis/poi/web
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: azure/docker-login@v1
+        with:
+          login-server: openhackkkg4t772acr.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Output Run Number
+        run: echo ${{ github.run_number }}
+
+    - run: |
+        docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
+        docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}

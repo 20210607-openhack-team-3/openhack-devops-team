@@ -31,8 +31,10 @@ jobs:
           docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
           docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
       
-      - uses: azure/webapps-deploy@v2
+      - name: Deploy on staging
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'openhackkkg4t772poi'
+          slot-name: staging
           publish-profile: ${{ secrets.API_POI_STAGING_DEPLOYMENT_PROFILE }}
           images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}'

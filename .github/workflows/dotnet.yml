@@ -9,6 +9,7 @@ on:
     paths:
       - 'apis/poi/**'    
       - '.github/workflows/dotnet.yml'
+      - '.github/workflows/dotnet-deploy.yml'
 
 defaults:
   run:

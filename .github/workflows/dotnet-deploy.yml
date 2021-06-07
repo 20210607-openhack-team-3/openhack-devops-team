@@ -24,7 +24,7 @@ jobs:
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Output Run Number
-          run: echo ${{ github.run_number }}
+        run: echo ${{ github.run_number }}
 
       - run: |
           docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}

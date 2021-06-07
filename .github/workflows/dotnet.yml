@@ -9,6 +9,8 @@ on:
     paths:
       - 'apis/poi/**'    
 
+
+
 defaults:
   run:
     working-directory: apis/poi
@@ -19,6 +21,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: JasonEtco/create-an-issue@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ADJECTIVE: great    
+        
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -29,3 +36,5 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Create Issue
+      if: failure() 

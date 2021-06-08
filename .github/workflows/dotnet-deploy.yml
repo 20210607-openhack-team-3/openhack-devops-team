@@ -85,7 +85,7 @@ jobs:
 
       - name: Swap slot
         uses: azure/CLI@v1
-        if: steps.checkDeployment.outcome == 'success'
+        if: success()
         with:
           inlineScript: |
             az webapp deployment slot swap --slot staging --targe-slot production --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          

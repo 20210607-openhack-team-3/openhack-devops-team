@@ -10,6 +10,10 @@ on:
       - '.github/workflows/golang.yml'
       - '.github/workflows/golang-deploy.yml'
 
+defaults:
+  run:
+    working-directory: apis/trips
+
 jobs:
 
   build:

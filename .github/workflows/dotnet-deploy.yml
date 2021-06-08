@@ -11,6 +11,12 @@ defaults:
   run:
     working-directory: apis/poi/web
 
+env:
+  webappName: openhackkkg4t772poi
+  resourceGroup: openhackkkg4t772poi
+  subscriptionId: 03a6d591-1096-4413-9cf4-ae9bb9a8f348
+
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -31,6 +37,17 @@ jobs:
           docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
           docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
       
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure slot is started
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp start --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
       - name: Deploy on staging
         uses: azure/webapps-deploy@v2
         with:
@@ -38,3 +55,42 @@ jobs:
           slot-name: staging
           publish-profile: ${{ secrets.API_POI_STAGING_DEPLOYMENT_PROFILE }}
           images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}'
+
+      # TODO: Check the API is up and running on the staging slot
+      - name: Check deployement
+        id: 'checkDeployment'
+        run: |
+          # url="https://openhackkkg4t772poi-staging.azurewebsites.net/api/healthcheck/poi"
+          result=$(curl -i $url 2>/dev/null | grep HTTP/2)
+          status=${result:7:3}
+
+          if [[ "$status" = "200" ]]; then
+            # exit 0  
+            echo "200"
+          else
+            echo "not 200"
+            exit 1
+          fi
+
+      # TODO: Create issue if not
+      - name: Create Issue
+        if: failure() 
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: ${{ env.GITHUB_WORKFLOW }}
+          filename: .github/ISSUE_TEMPLATE_HACK.md    
+
+      - name: Swap slot
+        uses: azure/CLI@v1
+        if: steps.checkDeployment.outcome == 'success'
+        with:
+          inlineScript: |
+            az webapp deployment slot swap --slot staging --targe-slot production --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
+      - name: Stop slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp stop --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}       

@@ -11,6 +11,13 @@ defaults:
   run:
     working-directory: apis/poi/web
 
+env:
+  webappName: openhackkkg4t772poi
+  resourceGroup: openhackkkg4t772poi
+  subscriptionId: 03a6d591-1096-4413-9cf4-ae9bb9a8f348
+  healthCheckUrl: https://openhackkkg4t772poi-staging.azurewebsites.net/api/healthcheck/poi
+  dockerImageName: api-poi
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -28,13 +35,76 @@ jobs:
         run: echo ${{ github.run_number }}
 
       - run: |
-          docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
-          docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}
+          docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}
+          docker push openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}
       
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure slot is started
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp start --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
       - name: Deploy on staging
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'openhackkkg4t772poi'
           slot-name: staging
           publish-profile: ${{ secrets.API_POI_STAGING_DEPLOYMENT_PROFILE }}
-          images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}'
+          images: 'openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}'
+
+      - name: Restart the slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
+      # TODO: Check the API is up and running on the staging slot
+      - name: Check deployement
+        id: 'checkDeployment'
+        continue-on-error: true
+        run: |
+          url=${{ env.healthCheckUrl }}
+
+          for i in $(seq 1 10)  
+          do 
+            result=$(curl -i $url 2>/dev/null | grep HTTP/2)
+            status=${result:7:3}
+
+            if [[ "$status" = "200" ]]; then
+              echo "200"
+              exit 0  
+            fi
+
+            sleep 10
+          done
+
+          # It failed a lot of time
+          exit 1
+
+      # TODO: Create issue if not
+      - name: Create Issue
+        if: failure() 
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: ${{ env.GITHUB_WORKFLOW }}
+          filename: .github/ISSUE_TEMPLATE_HACK.md    
+
+      - name: Swap slot
+        uses: azure/CLI@v1
+        if: success()
+        with:
+          inlineScript: |
+            az webapp deployment slot swap --slot staging --target-slot production --name ${{ env.webappName }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
+      - name: Stop slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp stop --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}       

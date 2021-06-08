@@ -57,6 +57,12 @@ jobs:
           publish-profile: ${{ secrets.API_POI_STAGING_DEPLOYMENT_PROFILE }}
           images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-poi:${{ github.run_number }}'
 
+      - name: Restart the slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
       # TODO: Check the API is up and running on the staging slot
       - name: Check deployement
         id: 'checkDeployment'

@@ -1,41 +1,37 @@
-name: .NET
+name: PR Trip API
 
 on:
-#  push:
-#    paths:
-#      - 'apis/poi/**'
+  # push:
+  #   branches: [ master ]
   pull_request:
     branches: [ master ]
     paths:
-      - 'apis/poi/**'    
-      - '.github/workflows/dotnet.yml'
-      - '.github/workflows/dotnet-deploy.yml'
+      - 'apis/trips/**'    
+      - '.github/workflows/golang.yml'
+      - '.github/workflows/golang-deploy.yml'
 
 defaults:
   run:
-    working-directory: apis/poi
+    working-directory: apis/trips
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
-       
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 2.1.x
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.11.1
 
     - name: Build
-      run: dotnet build --no-restore
+      run: go build -v ./...
 
     - name: Test
-      run: dotnet test --no-build --verbosity normal
-    
+      run: go test -v ./tests 
+
     # Execute the create-an-issue task if the previous task fails
     - name: Create Issue
       if: failure() 

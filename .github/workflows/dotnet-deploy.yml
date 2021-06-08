@@ -96,25 +96,25 @@ jobs:
           # It failed a lot of time
           exit 1
 
-      # TODO: Create issue if not
-      # - name: Create Issue
-      #   if: failure() 
-      #   uses: JasonEtco/create-an-issue@v2
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     title: ${{ env.GITHUB_WORKFLOW }}
-      #     filename: .github/ISSUE_TEMPLATE_HACK.md    
+      TODO: Create issue if not
+      - name: Create Issue
+        if: failure() 
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: ${{ env.GITHUB_WORKFLOW }}
+          filename: .github/ISSUE_TEMPLATE_HACK.md    
 
-      # - name: Swap slot
-      #   uses: azure/CLI@v1
-      #   if: success()
-      #   with:
-      #     inlineScript: |
-      #       az webapp deployment slot swap --slot staging --target-slot production --name ${{ env.webappName }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+      - name: Swap slot
+        uses: azure/CLI@v1
+        if: success()
+        with:
+          inlineScript: |
+            az webapp deployment slot swap --slot staging --target-slot production --name ${{ env.webappName }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
 
-      # - name: Stop slot
-      #   uses: azure/CLI@v1
-      #   with:
-      #     inlineScript: |
-      #       az webapp stop --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}       
+      - name: Stop slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp stop --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}       

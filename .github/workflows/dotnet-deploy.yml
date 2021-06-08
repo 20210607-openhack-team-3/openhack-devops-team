@@ -59,14 +59,15 @@ jobs:
       # TODO: Check the API is up and running on the staging slot
       - name: Check deployement
         id: 'checkDeployment'
+        continue-on-error: true
         run: |
           # url="https://openhackkkg4t772poi-staging.azurewebsites.net/api/healthcheck/poi"
           result=$(curl -i $url 2>/dev/null | grep HTTP/2)
           status=${result:7:3}
 
           if [[ "$status" = "200" ]]; then
-            # exit 0  
             echo "200"
+            exit 0  
           else
             echo "not 200"
             exit 1

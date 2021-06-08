@@ -23,7 +23,6 @@ module.exports = {
                 next(err);
                 return;
             }
-            data.responses = { ...data.responses, additional: true };
             res.status(status).send(data && data.responses);
         });
     }

@@ -28,7 +28,8 @@ namespace poi.Controllers
         public IActionResult Get()
         {
             _logger.LogInformation(LoggingEvents.Healthcheck, "Healthcheck Not Requested :)");
-            return Ok(new Healthcheck());
+            //return Ok(new Healthcheck());
+            return BadRequest();
         }
     }
 

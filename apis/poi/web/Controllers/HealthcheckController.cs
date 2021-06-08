@@ -7,7 +7,7 @@ using poi.Models;
 using poi.Data;
 using poi.Utility;
 using Newtonsoft.Json;
-
+using Microsoft.Extensions.Configuration;
 
 namespace poi.Controllers
 {
@@ -17,10 +17,12 @@ namespace poi.Controllers
     {
 
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
-        public HealthCheckController(ILogger<HealthCheckController> logger)
+        public HealthCheckController(ILogger<HealthCheckController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -28,8 +30,7 @@ namespace poi.Controllers
         public IActionResult Get()
         {
             _logger.LogInformation(LoggingEvents.Healthcheck, "Healthcheck Not Requested :)");
-            //return Ok(new Healthcheck());
-            return BadRequest();
+            return Ok(new Healthcheck { Version = _configuration["version"] });
         }
     }
 

@@ -15,5 +15,8 @@ namespace poi.Models
 
         [Newtonsoft.Json.JsonProperty(PropertyName = "status")]
         public string Status { get; set; }
+
+        [Newtonsoft.Json.JsonProperty(PropertyName = "version")]
+        public string Version { get; set; }
     }
 }

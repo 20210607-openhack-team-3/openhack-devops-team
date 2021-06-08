@@ -31,3 +31,13 @@ jobs:
 
     - name: Test
       run: go test -v ./tests 
+
+    # Execute the create-an-issue task if the previous task fails
+    - name: Create Issue
+      if: failure() 
+      uses: JasonEtco/create-an-issue@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        title: ${{ env.GITHUB_WORKFLOW }}
+        filename: .github/ISSUE_TEMPLATE_HACK.md        

@@ -38,5 +38,5 @@
 # anywhere in your repository.
 /apis/poi/ @sriquen
 /apis/trips/ @sachabruttin
-/apis/user-java/ @marcomaccio
+/apis/user-java/ @sriquen
 /apis/userprofile/  @adriandevopsstuff

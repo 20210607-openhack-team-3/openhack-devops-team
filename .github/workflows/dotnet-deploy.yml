@@ -15,6 +15,7 @@ env:
   webappName: openhackkkg4t772poi
   resourceGroup: openhackkkg4t772poi
   subscriptionId: 03a6d591-1096-4413-9cf4-ae9bb9a8f348
+  healthCheckUrl: https://openhackkkg4t772poi-staging.azurewebsites.net/api/healthcheck/poi
 
 
 jobs:
@@ -62,6 +63,7 @@ jobs:
         continue-on-error: true
         run: |
           # url="https://openhackkkg4t772poi-staging.azurewebsites.net/api/healthcheck/poi"
+          url=${{ env.healthCheckUrl }}
           result=$(curl -i $url 2>/dev/null | grep HTTP/2)
           status=${result:7:3}
 
@@ -88,7 +90,7 @@ jobs:
         if: success()
         with:
           inlineScript: |
-            az webapp deployment slot swap --slot staging --targe-slot production --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+            az webapp deployment slot swap --slot staging --targe-slot production --name ${{ env.webappName }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
 
       - name: Stop slot
         uses: azure/CLI@v1

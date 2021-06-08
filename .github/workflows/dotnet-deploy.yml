@@ -61,10 +61,34 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+            az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}
 
+      - name: Check the image tag
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            for i in $(seq 1 10)  
+            do 
+              dockerVersion=$(az webapp show --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }} --query "siteConfig.linuxFxVersion" --output tsv)
+              dockerVersion=$(echo $dockerVersion | cut -d ':' -f2)
+
+              if [[ "$dockerVersion" = "${{ github.run_number }}" ]]; then
+                exit 0  
+              fi
+
+              echo "Attempt #$i failed"
+              sleep 10
+            done
+
+            echo "Found a wrong version ($dockerVersion)."
+
+            # It failed a lot of time
+            exit 1
+
+            
       # TODO: Check the API is up and running on the staging slot
-      - name: Check deployement
+      - name: Check deployment
+        if: success()
         id: 'checkDeployment'
         continue-on-error: true
         run: |

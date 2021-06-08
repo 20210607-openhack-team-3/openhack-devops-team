@@ -1,0 +1,42 @@
+name: Java
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'apis/user-java/**'
+      - '.github/workflows/java.yml'
+      - '.github/workflows/java-deploy.yml'
+
+defaults:
+  run:
+    working-directory: apis/user-java
+
+env:
+  JAVA_VERSION: '12'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: ${{ env.JAVA_VERSION }}
+
+    - name: Test with Maven
+      run: mvn test
+
+    # Execute the create-an-issue task if the previous task fails
+    - name: Create Issue
+      if: failure() 
+      uses: JasonEtco/create-an-issue@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        title: ${{ env.GITHUB_WORKFLOW }}
+        filename: .github/ISSUE_TEMPLATE_HACK.md

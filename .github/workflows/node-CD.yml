@@ -1,0 +1,50 @@
+name: node-CD
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'apis/userprofile/**'    
+      - '.github/workflows/node-CD.yml'
+defaults:
+  run:
+    working-directory: apis/userprofile
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: login
+      uses: azure/docker-login@v1
+      with:
+        login-server: openhackkkg4t772acr.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Output Run Number
+      run: echo ${{ github.run_number }}
+
+    - name: Docker build and push
+      run: |
+        docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}
+        docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}
+      
+    - name: Deploy on staging
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'openhackkkg4t772userprofile'
+        slot-name: staging
+        publish-profile: ${{ secrets.API_USERPROFILE_STAGING_DEPLOYMENT_PROFILE }} #TODO: add userprofile
+        images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}'
+
+    # Execute the create-an-issue task if the previous task fails
+    - name: Create Issue
+      if: failure() 
+      uses: JasonEtco/create-an-issue@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        title: ${{ env.GITHUB_WORKFLOW }}
+        filename: .github/ISSUE_TEMPLATE_HACK.md

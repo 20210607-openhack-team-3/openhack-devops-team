@@ -81,6 +81,7 @@ jobs:
           for i in $(seq 1 10)  
           do 
             result=$(curl -s $url | jq .version)
+            result=$(echo $result | tr -d '"')
             
             if [[ "$result" = "${{ github.run_number }}" ]]; then
               echo "Correct build number: $result."

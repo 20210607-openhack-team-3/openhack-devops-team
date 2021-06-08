@@ -33,7 +33,7 @@ jobs:
         with:
           files: './apis/poi/web/appsettings.json'
         env:
-          App.version: ${{ github.run_number }}
+          version: ${{ github.run_number }}
 
       - uses: azure/docker-login@v1
         with:

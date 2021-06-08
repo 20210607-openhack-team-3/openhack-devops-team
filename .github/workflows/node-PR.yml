@@ -10,7 +10,7 @@ defaults:
   run:
     working-directory: apis/userprofile
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:

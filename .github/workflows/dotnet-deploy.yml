@@ -13,7 +13,7 @@ defaults:
 
 env:
   webappName: openhackkkg4t772poi
-  resourceGroup: openhackkkg4t772poi
+  resourceGroup: openhackkkg4t772rg
   subscriptionId: 03a6d591-1096-4413-9cf4-ae9bb9a8f348
   healthCheckUrl: https://openhackkkg4t772poi-staging.azurewebsites.net/api/healthcheck/poi
   dockerImageName: api-poi

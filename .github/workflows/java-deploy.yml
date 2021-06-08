@@ -11,9 +11,6 @@ defaults:
   run:
     working-directory: apis/user-java
 
-env:
-  JAVA_VERSION: '1.7'
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest

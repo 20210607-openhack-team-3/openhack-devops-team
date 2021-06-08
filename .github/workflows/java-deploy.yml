@@ -1,0 +1,43 @@
+name: Deploy Java
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'apis/user-java/**'
+      - '.github/workflows/java-deploy.yml'
+
+defaults:
+  run:
+    working-directory: apis/user-java
+
+env:
+  JAVA_VERSION: '1.7'
+
+jobs:
+  build-and-deploy:
+    runs-on: unbuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: azure/docker-login@v1
+        with:
+          login-server: openhackkkg4t772acr.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Output Run Number
+      run: echo ${{ github.run_number }}
+
+    - run: |
+        docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-user-java:${{ github.run_number }}
+        docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-user-java:${{ github.run_number }}
+    
+    - name: Deploy on staging
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'openhackkkg4t772userjava'
+        slot-name: staging
+        publish-profile: ${{ secrets.API_USER_JAVA_STAGING_DEPLOYMENT_PROFILE }}
+        images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-user-java:${{ github.run_number }}'

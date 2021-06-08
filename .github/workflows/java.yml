@@ -1,0 +1,31 @@
+name: Java
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'apis/user-java/**'
+      - '.github/workflows/java.yml'
+      - '.github/workflows/java-deploy.yml'
+
+defaults:
+  run:
+    working-directory: apis/user-java
+
+env:
+  JAVA_VERSION: '1.7'
+
+jobs:
+  build:
+    runs-on: unbuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+
+    - name: Test with Maven
+      run: mvn test

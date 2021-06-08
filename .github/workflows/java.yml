@@ -13,7 +13,7 @@ defaults:
     working-directory: apis/user-java
 
 env:
-  JAVA_VERSION: '1.7'
+  JAVA_VERSION: '12'
 
 jobs:
   build:
@@ -23,8 +23,9 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set up JDK
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: ${{ env.JAVA_VERSION }}
 
     - name: Test with Maven

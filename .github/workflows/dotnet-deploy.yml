@@ -96,7 +96,7 @@ jobs:
           # It failed a lot of time
           exit 1
 
-      TODO: Create issue if not
+      # TODO: Create issue if not
       - name: Create Issue
         if: failure() 
         uses: JasonEtco/create-an-issue@v2

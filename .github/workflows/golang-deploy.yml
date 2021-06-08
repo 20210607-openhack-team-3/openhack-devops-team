@@ -34,7 +34,7 @@ jobs:
       - name: Deploy on staging
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'openhackkkg4t772poi'
+          app-name: 'openhackkkg4t772trips'
           slot-name: staging
           publish-profile: ${{ secrets.API_TRIPS_STAGING_DEPLOYMENT_PROFILE }}
           images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}'

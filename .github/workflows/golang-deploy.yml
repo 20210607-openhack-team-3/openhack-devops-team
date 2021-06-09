@@ -60,7 +60,7 @@ jobs:
       - name: Deploy on staging
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'openhackkkg4t772poi'
+          app-name: ${{ env.webappName }}
           slot-name: staging
           publish-profile: ${{ env.publishProfile }}
           images: 'openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}'

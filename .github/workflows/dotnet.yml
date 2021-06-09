@@ -48,14 +48,17 @@ jobs:
       run: dotnet build --no-restore /p:UseSharedCompilation=false #https://github.com/github/codeql-action/issues/98
 
     - name: Test & Code Coverage
-      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=json,cobertura,lcov,teamcity,opencover
+      run: | 
+        dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=json,cobertura,lcov,teamcity,opencover
+        cp tests/IntegrationTests/TestResults/**/coverage.info tests/IntegrationTests/TestResults/
+        cp tests/UnitTests/TestResults/**/coverage.info tests/UnitTests/TestResults/
 
 
     - name: Publish coverage report to coveralls.io
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: .apis/poi/tests/IntegrationTests/TestResults/**/coverage.info
+        path-to-lcov: ./tests/UnitTests/TestResults/coverage.info
 
     # Execute the create-an-issue task if the previous task fails
     - name: Create Issue

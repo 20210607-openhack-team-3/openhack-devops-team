@@ -56,7 +56,7 @@ jobs:
         cp ./tests/IntegrationTests/TestResults/**/coverage.info ./tests/IntegrationTests/TestResults/
         cp ./tests/UnitTests/TestResults/**/coverage.info ./tests/UnitTests/TestResults/
 
-        dir 
+        ls -al ./tests/UnitTests/
 
     - name: Publish coverage report to coveralls.io
       uses: coverallsapp/github-action@master

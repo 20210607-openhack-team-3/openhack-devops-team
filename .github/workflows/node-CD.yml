@@ -65,7 +65,7 @@ jobs:
         publish-profile: ${{ secrets.API_USERPROFILE_TESTING_DEPLOYMENT_PROFILE }}
         images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-userprofile:${{ github.run_number }}'
 
-    - name: Restart the slot
+    - name: Restart the slot and route 5% traffic
       uses: azure/CLI@v1
       with:
         inlineScript: |
@@ -93,7 +93,6 @@ jobs:
       with:
         inlineScript: |
           az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}
-          az webapp traffic-routing set --distribution staging=5 --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }}
 
     - name: Check the image tag
       uses: azure/CLI@v1

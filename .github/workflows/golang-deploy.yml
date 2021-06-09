@@ -11,6 +11,14 @@ defaults:
   run:
     working-directory: apis/trips
 
+env:
+  webappName: openhackkkg4t772trips
+  resourceGroup: openhackkkg4t772rg
+  subscriptionId: 03a6d591-1096-4413-9cf4-ae9bb9a8f348
+  healthCheckUrl: https://openhackkkg4t772trips-staging.azurewebsites.net/api/healthcheck/trips
+  dockerImageName: api-trips
+  publishProfile: ${{ secrets.API_TRIPS_STAGING_DEPLOYMENT_PROFILE }}
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -18,23 +26,96 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Output Run Number
+        run: echo ${{ github.run_number }}
+
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: './apis/trips/tripsgo/settings.json'
+        env:
+          version: ${{ github.run_number }}
+
       - uses: azure/docker-login@v1
         with:
           login-server: openhackkkg4t772acr.azurecr.io
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Output Run Number
-        run: echo ${{ github.run_number }}
-
       - run: |
-          docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
-          docker push openhackkkg4t772acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}
+          docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}
+          docker push openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}
       
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure slot is started
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp start --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
       - name: Deploy on staging
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'openhackkkg4t772trips'
+          app-name: ${{ env.webappName }}
           slot-name: staging
-          publish-profile: ${{ secrets.API_TRIPS_STAGING_DEPLOYMENT_PROFILE }}
-          images: 'openhackkkg4t772acr.azurecr.io/devopsoh/api-trips:${{ github.run_number }}'
+          publish-profile: ${{ env.publishProfile }}
+          images: 'openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}'
+
+      - name: Restart the slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}
+
+      # TODO: Check the API is up and running on the staging slot
+      - name: Check deployment
+        if: success()
+        id: 'checkDeployment'
+        continue-on-error: true
+        run: |
+          url=${{ env.healthCheckUrl }}
+
+          for i in $(seq 1 10)  
+          do 
+            result=$(curl -s $url | jq .version)
+            result=$(echo $result | tr -d '"')
+            
+            if [[ "$result" = "${{ github.run_number }}" ]]; then
+              echo "Correct build number: $result."
+              exit 0  
+            fi
+
+            sleep 10
+          done
+
+          echo "Wrong build number ($result)."
+
+          # It failed a lot of time
+          exit 1
+
+      # TODO: Create issue if not
+      - name: Create Issue
+        if: failure() 
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: ${{ env.GITHUB_WORKFLOW }}
+          filename: .github/ISSUE_TEMPLATE_HACK.md    
+
+      - name: Swap slot
+        uses: azure/CLI@v1
+        if: success()
+        with:
+          inlineScript: |
+            az webapp deployment slot swap --slot staging --target-slot production --name ${{ env.webappName }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
+
+      - name: Stop slot
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp stop --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}       

@@ -8,4 +8,7 @@ type Healthcheck struct {
 
 	//
 	Status string `json:"status,omitempty"`
+
+	//
+	Version string `json:"version,omitempty"`
 }

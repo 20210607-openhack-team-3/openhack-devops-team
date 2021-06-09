@@ -25,14 +25,21 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Output Run Number
+        run: echo ${{ github.run_number }}
+
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: './apis/poi/web/appsettings.json'
+        env:
+          version: ${{ github.run_number }}
+
       - uses: azure/docker-login@v1
         with:
           login-server: openhackkkg4t772acr.azurecr.io
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Output Run Number
-        run: echo ${{ github.run_number }}
 
       - run: |
           docker build . -t openhackkkg4t772acr.azurecr.io/devopsoh/${{ env.dockerImageName }}:${{ github.run_number }}
@@ -63,29 +70,6 @@ jobs:
           inlineScript: |
             az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}
 
-      - name: Check the image tag
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            for i in $(seq 1 10)  
-            do 
-              dockerVersion=$(az webapp show --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }} --query "siteConfig.linuxFxVersion" --output tsv)
-              dockerVersion=$(echo $dockerVersion | cut -d ':' -f2)
-
-              if [[ "$dockerVersion" = "${{ github.run_number }}" ]]; then
-                exit 0  
-              fi
-
-              echo "Attempt #$i failed"
-              sleep 10
-            done
-
-            echo "Found a wrong version ($dockerVersion)."
-
-            # It failed a lot of time
-            exit 1
-
-            
       # TODO: Check the API is up and running on the staging slot
       - name: Check deployment
         if: success()
@@ -96,16 +80,18 @@ jobs:
 
           for i in $(seq 1 10)  
           do 
-            result=$(curl -i $url 2>/dev/null | grep HTTP/2)
-            status=${result:7:3}
-
-            if [[ "$status" = "200" ]]; then
-              echo "200"
+            result=$(curl -s $url | jq .version)
+            result=$(echo $result | tr -d '"')
+            
+            if [[ "$result" = "${{ github.run_number }}" ]]; then
+              echo "Correct build number: $result."
               exit 0  
             fi
 
             sleep 10
           done
+
+          echo "Wrong build number ($result)."
 
           # It failed a lot of time
           exit 1

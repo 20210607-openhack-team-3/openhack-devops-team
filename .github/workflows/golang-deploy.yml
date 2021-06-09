@@ -18,6 +18,7 @@ env:
   healthCheckUrl: https://openhackkkg4t772trips-staging.azurewebsites.net/api/healthcheck/trips
   dockerImageName: api-trips
   publishProfile: ${{ secrets.API_TRIPS_STAGING_DEPLOYMENT_PROFILE }}
+  azcli: 2.24.2
 
 jobs:
   build-and-deploy:
@@ -54,7 +55,7 @@ jobs:
       - name: Ensure slot is started
         uses: azure/CLI@v1
         with:
-          azcliversion: 2.23
+          azcliversion: ${{ env.azcli }}
           inlineScript: |
             az webapp start --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
 
@@ -69,7 +70,7 @@ jobs:
       - name: Restart the slot
         uses: azure/CLI@v1
         with:
-          azcliversion: 2.23
+          azcliversion: ${{ env.azcli }}
           inlineScript: |
             az webapp restart --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}
 
@@ -113,13 +114,13 @@ jobs:
         uses: azure/CLI@v1
         if: success()
         with:
-          azcliversion: 2.23
+          azcliversion: ${{ env.azcli }}
           inlineScript: |
             az webapp deployment slot swap --slot staging --target-slot production --name ${{ env.webappName }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
 
       - name: Stop slot
         uses: azure/CLI@v1
         with:
-          azcliversion: 2.23
+          azcliversion: ${{ env.azcli }}
           inlineScript: |
             az webapp stop --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}       

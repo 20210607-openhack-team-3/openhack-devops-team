@@ -1,4 +1,4 @@
-FROM golang:1.11.1 AS gobuild
+FROM golang AS gobuild
 
 WORKDIR /go/src/github.com/Azure-Samples/openhack-devops-team/apis/trips
 
@@ -28,5 +28,7 @@ RUN apk add --update \
 
 COPY --from=gobuild /go/src/github.com/Azure-Samples/openhack-devops-team/apis/trips/main .
 COPY --from=gobuild /go/src/github.com/Azure-Samples/openhack-devops-team/apis/trips/api ./api/
+
+COPY ./tripsgo/settings.json ./tripsgo/settings.json
 
 CMD ["./main"]

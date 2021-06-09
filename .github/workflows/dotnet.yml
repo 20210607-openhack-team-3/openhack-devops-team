@@ -55,7 +55,7 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./**/TestResults/**/coverage.info 
+        path-to-lcov: ./tests/IntegrationTests/TestResults/**/coverage.info 
 
     # Execute the create-an-issue task if the previous task fails
     - name: Create Issue

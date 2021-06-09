@@ -54,6 +54,7 @@ jobs:
       - name: Ensure slot is started
         uses: azure/CLI@v1
         with:
+          azcliversion: 2.24.0
           inlineScript: |
             az webapp start --slot staging --name ${{ env.webappName  }} --resource-group ${{ env.resourceGroup }} --subscription ${{ env.subscriptionId }}          
 
